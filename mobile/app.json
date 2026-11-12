@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "name": "House Sports Scoreboard",
+    "slug": "house-sports-scoreboard",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "backgroundColor": "#1e293b",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.housesports.scoreboard"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#1e293b"
+      },
+      "package": "com.housesports.scoreboard"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-asset",
+      "expo-font"
+    ]
+  }
+}
