@@ -12,6 +12,7 @@ import {
 import { Ionicons } from '@expo/vector-icons'
 import type { ScoreboardEvent, JudgeEntry, AppMode, EventStatus } from '../types'
 import { HOUSES, HOUSE_MAP } from '../constants/houses'
+import FieldStopwatch from '../components/FieldStopwatch'
 
 type Props = {
   events: ScoreboardEvent[]
@@ -53,6 +54,23 @@ export default function JudgeCardScreen({
   const [newStudentHouse, setNewStudentHouse] = useState<number>(1)
   const [newStudentNote, setNewStudentNote] = useState('')
   const [newStudentPos, setNewStudentPos] = useState<1 | 2 | 3 | null>(null)
+
+  // Stopwatch state
+  const [selectedEntryForTimer, setSelectedEntryForTimer] = useState<string | null>(null)
+  const [lastRecordedTime, setLastRecordedTime] = useState<string>('')
+
+  const handleApplyStopwatchTime = (timeStr: string, targetEntryId?: string) => {
+    setLastRecordedTime(timeStr)
+    const targetId =
+      targetEntryId ||
+      selectedEntryForTimer ||
+      entries.find((e) => !e.note?.trim())?.id ||
+      entries[0]?.id
+    if (!targetId) return
+    setEntries((prev) =>
+      prev.map((e) => (e.id === targetId ? { ...e, note: timeStr } : e))
+    )
+  }
 
   // Load entries for active event
   useEffect(() => {
@@ -231,6 +249,12 @@ export default function JudgeCardScreen({
             <Text style={styles.successText}>Official scores saved successfully!</Text>
           </View>
         )}
+
+        {/* Built-in On-Field Stopwatch for Track & Field Judges */}
+        <FieldStopwatch
+          onUseTime={(timeStr) => handleApplyStopwatchTime(timeStr)}
+          defaultOpen={activeEvent?.category?.toLowerCase().includes('track') || false}
+        />
 
         {/* Event Header Card */}
         <View style={styles.eventHeaderCard}>
@@ -437,14 +461,38 @@ export default function JudgeCardScreen({
 
                 {/* Remarks / Distance / Time */}
                 <View style={styles.inputGroup}>
-                  <TextInput
-                    placeholder="Time / Distance / Remarks (optional)..."
-                    placeholderTextColor="#94a3b8"
-                    value={entry.note}
-                    editable={canEdit}
-                    onChangeText={(text) => handleNoteChange(entry.id, text)}
-                    style={[styles.noteInput, !canEdit && styles.inputDisabled]}
-                  />
+                  <View style={styles.noteInputRow}>
+                    <TextInput
+                      placeholder="Time / Remarks (e.g. 11.2s)..."
+                      placeholderTextColor="#94a3b8"
+                      value={entry.note}
+                      editable={canEdit}
+                      onChangeText={(text) => handleNoteChange(entry.id, text)}
+                      style={[styles.noteInput, { flex: 1 }, !canEdit && styles.inputDisabled]}
+                    />
+                    {canEdit && (
+                      <Pressable
+                        onPress={() => {
+                          setSelectedEntryForTimer(entry.id)
+                          if (lastRecordedTime) {
+                            handleApplyStopwatchTime(lastRecordedTime, entry.id)
+                          }
+                        }}
+                        style={[
+                          styles.timerButton,
+                          selectedEntryForTimer === entry.id && styles.timerButtonActive,
+                        ]}
+                        hitSlop={6}
+                        accessibilityLabel="Record stopwatch time"
+                      >
+                        <Ionicons
+                          name="timer-outline"
+                          size={16}
+                          color={selectedEntryForTimer === entry.id ? '#ffffff' : '#2563eb'}
+                        />
+                      </Pressable>
+                    )}
+                  </View>
                 </View>
               </View>
             )
@@ -925,6 +973,25 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     fontSize: 11,
     color: '#475569',
+  },
+  noteInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  timerButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    borderRadius: 8,
+    backgroundColor: '#eff6ff',
+    borderWidth: 1,
+    borderColor: '#bfdbfe',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  timerButtonActive: {
+    backgroundColor: '#2563eb',
+    borderColor: '#1d4ed8',
   },
   inputDisabled: {
     backgroundColor: '#f1f5f9',

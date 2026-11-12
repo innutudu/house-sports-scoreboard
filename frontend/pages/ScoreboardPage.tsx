@@ -46,6 +46,7 @@ import ModeSwitcherDialog from './ui/ModeSwitcherDialog'
 import LeftDrawerMenu from './ui/LeftDrawerMenu'
 import CloudSyncDialog from './ui/CloudSyncDialog'
 import SecretResetDialog from './ui/SecretResetDialog'
+import BroadcastTicker from './ui/BroadcastTicker'
 import {
   getSupabase,
   isSupabaseConfigured,
@@ -378,6 +379,9 @@ export default function ScoreboardPage() {
           </div>
         </div>
       </header>
+
+      {/* Live Sports Broadcast Ticker */}
+      <BroadcastTicker standings={standings} events={eventList} />
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6">
         {error && (

@@ -222,6 +222,7 @@ export default function App() {
               standings={standings}
               events={events}
               onNavigateTab={(tab) => setActiveTab(tab)}
+              onRefresh={refreshAll}
             />
           )}
 
@@ -240,6 +241,7 @@ export default function App() {
               onOpenJudgeCard={handleOpenJudgeCardForEvent}
               onAddEvent={() => setAddEventModalOpen(true)}
               onDeleteEvent={handleDeleteEvent}
+              onRefresh={refreshAll}
             />
           )}
 

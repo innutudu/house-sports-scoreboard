@@ -7,6 +7,7 @@ import {
   Pressable,
   TextInput,
   Alert,
+  RefreshControl,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import type { ScoreboardEvent, AppMode, EventStatus } from '../types'
@@ -18,7 +19,16 @@ type Props = {
   onOpenJudgeCard: (eventId: number) => void
   onAddEvent?: () => void
   onDeleteEvent?: (eventId: number) => void
+  onRefresh?: () => Promise<void> | void
 }
+
+const CATEGORIES = [
+  { id: 'all', label: 'All Types', icon: 'apps' },
+  { id: 'Track', label: '🏃 Track', icon: 'speedometer' },
+  { id: 'Field - Throw', label: '🎯 Throws', icon: 'disc' },
+  { id: 'Field - Jump', label: '🦘 Jumps', icon: 'trending-up' },
+  { id: 'Team', label: '🤝 Team', icon: 'people' },
+] as const
 
 export default function EventsScreen({
   events,
@@ -26,16 +36,30 @@ export default function EventsScreen({
   onOpenJudgeCard,
   onAddEvent,
   onDeleteEvent,
+  onRefresh,
 }: Props) {
   const [filter, setFilter] = useState<'all' | EventStatus>('all')
+  const [categoryFilter, setCategoryFilter] = useState<string>('all')
   const [search, setSearch] = useState('')
+  const [refreshing, setRefreshing] = useState(false)
+
+  const handleRefresh = async () => {
+    if (!onRefresh) return
+    setRefreshing(true)
+    try {
+      await onRefresh()
+    } finally {
+      setRefreshing(false)
+    }
+  }
 
   const filteredEvents = events.filter((ev) => {
     const matchesFilter = filter === 'all' || ev.status === filter
+    const matchesCategory = categoryFilter === 'all' || ev.category === categoryFilter
     const matchesSearch =
       ev.name.toLowerCase().includes(search.toLowerCase()) ||
       ev.category.toLowerCase().includes(search.toLowerCase())
-    return matchesFilter && matchesSearch
+    return matchesFilter && matchesCategory && matchesSearch
   })
 
   const getStatusStyle = (status: EventStatus) => {
@@ -97,10 +121,45 @@ export default function EventsScreen({
             </Pressable>
           ))}
         </ScrollView>
+
+        {/* Category Filter Chips */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll}>
+          {CATEGORIES.map((cat) => {
+            const count =
+              cat.id === 'all'
+                ? events.length
+                : events.filter((e) => e.category === cat.id).length
+            return (
+              <Pressable
+                key={cat.id}
+                onPress={() => setCategoryFilter(cat.id)}
+                style={[
+                  styles.categoryChip,
+                  categoryFilter === cat.id && styles.categoryChipActive,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.categoryText,
+                    categoryFilter === cat.id && styles.categoryTextActive,
+                  ]}
+                >
+                  {cat.label} ({count})
+                </Text>
+              </Pressable>
+            )
+          })}
+        </ScrollView>
       </View>
 
       {/* Events List */}
-      <ScrollView style={styles.list} contentContainerStyle={styles.listContent}>
+      <ScrollView
+        style={styles.list}
+        contentContainerStyle={styles.listContent}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} colors={['#2563eb']} />
+        }
+      >
         {filteredEvents.map((ev) => {
           const st = getStatusStyle(ev.status)
           return (
@@ -211,6 +270,32 @@ const styles = StyleSheet.create({
   },
   filtersScroll: {
     flexDirection: 'row',
+  },
+  categoryScroll: {
+    flexDirection: 'row',
+    marginTop: 6,
+  },
+  categoryChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    marginRight: 6,
+  },
+  categoryChipActive: {
+    backgroundColor: '#eff6ff',
+    borderColor: '#2563eb',
+  },
+  categoryText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#64748b',
+  },
+  categoryTextActive: {
+    color: '#2563eb',
+    fontWeight: '800',
   },
   filterChip: {
     paddingHorizontal: 12,

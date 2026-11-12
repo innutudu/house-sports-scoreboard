@@ -2,6 +2,7 @@ import { Trophy, Medal, Award, Star, Table } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '../../lib/shadcn/card'
 import { Skeleton } from '../../lib/shadcn/skeleton'
 import { houseStyle, type HouseStanding, type ScoreboardEvent } from './houses'
+import Podium from './Podium'
 
 const RANK_ICONS = [
   { icon: Trophy, label: '1st', color: 'text-amber-500' },
@@ -31,6 +32,9 @@ export default function Standings({ standings, events, loading }: Props) {
 
   return (
     <div className="space-y-6">
+      {/* Live Championship Podium View */}
+      <Podium standings={standings} />
+
       {/* Visual Leaderboard Cards */}
       <Card>
         <CardHeader>

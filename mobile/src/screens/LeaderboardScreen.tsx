@@ -1,21 +1,35 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   Pressable,
+  RefreshControl,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import type { HouseStanding, ScoreboardEvent, NavTab } from '../types'
+import Podium from '../components/Podium'
 
 type Props = {
   standings: HouseStanding[]
   events: ScoreboardEvent[]
   onNavigateTab: (tab: NavTab) => void
+  onRefresh?: () => Promise<void> | void
 }
 
-export default function LeaderboardScreen({ standings, events, onNavigateTab }: Props) {
+export default function LeaderboardScreen({ standings, events, onNavigateTab, onRefresh }: Props) {
+  const [refreshing, setRefreshing] = useState(false)
+
+  const handleRefresh = async () => {
+    if (!onRefresh) return
+    setRefreshing(true)
+    try {
+      await onRefresh()
+    } finally {
+      setRefreshing(false)
+    }
+  }
   const maxPoints = Math.max(...standings.map((s) => s.total_points), 1)
   const leader = standings[0]
   const completedEvents = events.filter((e) => e.status === 'completed').length
@@ -34,7 +48,13 @@ export default function LeaderboardScreen({ standings, events, onNavigateTab }: 
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.content}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} colors={['#2563eb']} />
+      }
+    >
       {/* Hero Banner: Leading House */}
       {leader && (
         <View style={styles.heroBanner}>
@@ -80,6 +100,9 @@ export default function LeaderboardScreen({ standings, events, onNavigateTab }: 
           <Text style={styles.matrixBtnText}>Score Matrix</Text>
         </Pressable>
       </View>
+
+      {/* Championship Podium 3-Tier Step */}
+      <Podium standings={standings} />
 
       {/* Standings List Header */}
       <View style={styles.sectionHeader}>

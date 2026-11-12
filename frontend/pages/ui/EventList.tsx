@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { CalendarDays, Pencil, Trash2, Users, CircleDot, Trophy, Medal, Award } from 'lucide-react'
+import { CalendarDays, Pencil, Trash2, Users, CircleDot, Trophy, Medal, Award, Search, Filter } from 'lucide-react'
 import { Button } from '../../lib/shadcn/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../lib/shadcn/card'
 import { Skeleton } from '../../lib/shadcn/skeleton'
 import { Badge } from '../../lib/shadcn/badge'
+import { Input } from '../../lib/shadcn/input'
 import {
   houseStyle,
   formatEventDate,
@@ -24,7 +25,20 @@ type Props = {
   onOpenJudgeCard?: (event: ScoreboardEvent) => void
 }
 
-const CATEGORY_FILTERS = ['All', 'Track', 'Field - Throw', 'Field - Jump', 'Team']
+const CATEGORY_FILTERS = [
+  { id: 'All', label: 'All Events', icon: '🏆' },
+  { id: 'Track', label: 'Track (Sprints & Relays)', icon: '🏃' },
+  { id: 'Field - Throw', label: 'Throws (Javelin, Shot, Discus)', icon: '🎯' },
+  { id: 'Field - Jump', label: 'Jumps (High & Long)', icon: '🦘' },
+  { id: 'Team', label: 'Team (Tug of War)', icon: '🤝' },
+]
+
+const STATUS_FILTERS = [
+  { id: 'all', label: 'All Status' },
+  { id: 'live', label: '🔴 Live Now' },
+  { id: 'completed', label: '✅ Completed' },
+  { id: 'upcoming', label: '⏳ Upcoming' },
+]
 
 export default function EventList({
   events,
@@ -36,6 +50,8 @@ export default function EventList({
   onOpenJudgeCard,
 }: Props) {
   const [activeFilter, setActiveFilter] = useState('All')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [searchQuery, setSearchQuery] = useState('')
 
   if (loading && events.length === 0) {
     return (
@@ -48,25 +64,66 @@ export default function EventList({
   }
 
   const filteredEvents = events.filter((e) => {
-    if (activeFilter === 'All') return true
-    return e.category === activeFilter
+    const matchesCategory = activeFilter === 'All' || e.category === activeFilter
+    const matchesStatus = statusFilter === 'all' || e.status === statusFilter
+    const matchesSearch =
+      !searchQuery.trim() ||
+      e.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      e.category.toLowerCase().includes(searchQuery.toLowerCase())
+    return matchesCategory && matchesStatus && matchesSearch
   })
 
   return (
     <div className="space-y-4">
+      {/* Controls Bar: Search & Status Filter */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-2.5" />
+          <Input
+            placeholder="Search events (e.g. 100m, Relay, Javelin)..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 h-9 text-xs"
+          />
+        </div>
+
+        {/* Status Pills */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+          {STATUS_FILTERS.map((st) => (
+            <Button
+              key={st.id}
+              variant={statusFilter === st.id ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setStatusFilter(st.id)}
+              className="text-xs h-8 px-2.5 whitespace-nowrap"
+            >
+              {st.label}
+            </Button>
+          ))}
+        </div>
+      </div>
+
       {/* Category Filter Pills */}
       <div className="flex flex-wrap items-center gap-2 pb-1">
-        {CATEGORY_FILTERS.map((cat) => (
-          <Button
-            key={cat}
-            variant={activeFilter === cat ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setActiveFilter(cat)}
-            className="text-xs h-8"
-          >
-            {cat}
-          </Button>
-        ))}
+        {CATEGORY_FILTERS.map((cat) => {
+          const count =
+            cat.id === 'All'
+              ? events.length
+              : events.filter((e) => e.category === cat.id).length
+          return (
+            <Button
+              key={cat.id}
+              variant={activeFilter === cat.id ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setActiveFilter(cat.id)}
+              className="text-xs h-8 gap-1.5"
+            >
+              <span>{cat.icon}</span>
+              <span>{cat.label}</span>
+              <span className="text-[10px] opacity-70 tabular-nums">({count})</span>
+            </Button>
+          )
+        })}
         <span className="text-xs text-muted-foreground ml-auto">
           Showing {filteredEvents.length} of {events.length} events
         </span>

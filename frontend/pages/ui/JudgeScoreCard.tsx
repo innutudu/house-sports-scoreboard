@@ -16,7 +16,9 @@ import {
   Users,
   Check,
   AlertCircle,
+  Timer,
 } from 'lucide-react'
+import FieldStopwatch from './FieldStopwatch'
 import { Button } from '../../lib/shadcn/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../lib/shadcn/card'
 import { Input } from '../../lib/shadcn/input'
@@ -74,9 +76,24 @@ export default function JudgeScoreCard({
   const [newStudentPosition, setNewStudentPosition] = useState<1 | 2 | 3 | null>(null)
   const [newStudentNote, setNewStudentNote] = useState('')
   const [nameError, setNameError] = useState('')
+  const [activeEntryForTimer, setActiveEntryForTimer] = useState<string | null>(null)
+  const [lastRecordedTime, setLastRecordedTime] = useState<string>('')
 
   const canEditScores = currentMode === 'admin' || currentMode === 'judge'
   const currentEvent = events.find((e) => e.id === currentEventId) || events[0]
+
+  const handleApplyStopwatchTime = (timeStr: string, targetEntryId?: string) => {
+    setLastRecordedTime(timeStr)
+    const targetId =
+      targetEntryId ||
+      activeEntryForTimer ||
+      entries.find((e) => !e.note?.trim())?.id ||
+      entries[0]?.id
+    if (!targetId) return
+    setEntries((prev) =>
+      prev.map((item) => (item.id === targetId ? { ...item, note: timeStr } : item))
+    )
+  }
 
   useEffect(() => {
     if (selectedEventId && selectedEventId !== currentEventId) {
@@ -381,6 +398,12 @@ export default function JudgeScoreCard({
         </CardContent>
       </Card>
 
+      {/* On-Field Digital Stopwatch for Track & Field Events */}
+      <FieldStopwatch
+        onUseTime={(timeStr) => handleApplyStopwatchTime(timeStr)}
+        defaultOpen={currentEvent.category.toLowerCase().includes('track')}
+      />
+
       {/* Main Score Card for Judges */}
       <Card className="border-2 shadow-sm overflow-hidden">
         {/* Card Header matching Score Sheets document */}
@@ -642,14 +665,39 @@ export default function JudgeScoreCard({
                         {/* Time / Remarks */}
                         <td className="py-2 px-3">
                           {canEditScores ? (
-                            <Input
-                              placeholder="e.g. 11.4s"
-                              value={entry.note || ''}
-                              onChange={(e) => handleUpdateNote(entry.id, e.target.value)}
-                              className="h-9 text-xs"
-                            />
+                            <div className="flex items-center gap-1.5">
+                              <Input
+                                placeholder="e.g. 11.4s"
+                                value={entry.note || ''}
+                                onChange={(e) => handleUpdateNote(entry.id, e.target.value)}
+                                className="h-9 text-xs"
+                              />
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setActiveEntryForTimer(entry.id)
+                                  if (lastRecordedTime) {
+                                    handleApplyStopwatchTime(lastRecordedTime, entry.id)
+                                  }
+                                }}
+                                className={`h-9 px-2 text-xs shrink-0 transition-colors ${
+                                  activeEntryForTimer === entry.id
+                                    ? 'bg-primary text-primary-foreground border-primary'
+                                    : 'text-muted-foreground hover:text-primary'
+                                }`}
+                                title={
+                                  lastRecordedTime
+                                    ? `Insert captured time: ${lastRecordedTime}`
+                                    : 'Select this athlete for stopwatch time'
+                                }
+                              >
+                                <Timer className="w-3.5 h-3.5" />
+                              </Button>
+                            </div>
                           ) : (
-                            <span className="text-xs text-muted-foreground">
+                            <span className="text-xs text-muted-foreground font-mono">
                               {entry.note || '—'}
                             </span>
                           )}
