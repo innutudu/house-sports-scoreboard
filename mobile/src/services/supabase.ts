@@ -41,6 +41,10 @@ export function sanitizeSupabaseUrl(rawUrl: string): string {
 let cachedClient: SupabaseClient | null = null
 let memoryConfig: SupabaseConfig = { url: '', key: '' }
 
+const DEFAULT_SUPABASE_URL = 'https://uvgjfadzwawkzkvkixda.supabase.co'
+const DEFAULT_SUPABASE_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2Z2pmYWR6d2F3a3prdmtpeGRhIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5NDQ1NDg0MiwiZXhwIjoyMTEwMDMwODQyfQ.T54H8aeM1UKnm1EpI4C-vzyDxhxaWxY3XMU00m6-yBA'
+
 export async function loadSupabaseConfigAsync(): Promise<SupabaseConfig> {
   try {
     const raw = await AsyncStorage.getItem(STORAGE_KEY)
@@ -55,6 +59,13 @@ export async function loadSupabaseConfigAsync(): Promise<SupabaseConfig> {
       }
     }
   } catch {}
+
+  const envUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL
+  const envKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_KEY
+  memoryConfig = {
+    url: sanitizeSupabaseUrl(envUrl),
+    key: envKey.trim(),
+  }
   return memoryConfig
 }
 

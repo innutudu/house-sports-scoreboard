@@ -74,6 +74,10 @@ export function subscribeCloudStatus(fn: (status: CloudStatus, error?: string) =
   return () => statusListeners.delete(fn)
 }
 
+const DEFAULT_SUPABASE_URL = 'https://uvgjfadzwawkzkvkixda.supabase.co'
+const DEFAULT_SUPABASE_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2Z2pmYWR6d2F3a3prdmtpeGRhIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5NDQ1NDg0MiwiZXhwIjoyMTEwMDMwODQyfQ.T54H8aeM1UKnm1EpI4C-vzyDxhxaWxY3XMU00m6-yBA'
+
 export function getSupabaseConfig(): SupabaseConfig {
   // 1. Check localStorage first (in-app configured)
   try {
@@ -89,10 +93,10 @@ export function getSupabaseConfig(): SupabaseConfig {
     }
   } catch {}
 
-  // 2. Check Vite environment variables (.env)
+  // 2. Check Vite environment variables (.env) or fallback to project defaults
   const metaEnv = (import.meta as any).env || {}
-  const envUrl = sanitizeSupabaseUrl((metaEnv.VITE_SUPABASE_URL as string | undefined) || '')
-  const envKey = (metaEnv.VITE_SUPABASE_ANON_KEY as string | undefined)?.trim() || ''
+  const envUrl = sanitizeSupabaseUrl((metaEnv.VITE_SUPABASE_URL as string | undefined) || DEFAULT_SUPABASE_URL)
+  const envKey = (metaEnv.VITE_SUPABASE_ANON_KEY as string | undefined)?.trim() || DEFAULT_SUPABASE_KEY
 
   return { url: envUrl, key: envKey }
 }
