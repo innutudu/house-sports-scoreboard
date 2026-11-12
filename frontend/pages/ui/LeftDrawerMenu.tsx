@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import {
   X,
   Trophy,
@@ -17,6 +17,7 @@ import {
   ExternalLink,
   Cloud,
   Radio,
+  RotateCcw,
 } from 'lucide-react'
 import { Button } from '../../lib/shadcn/button'
 import type { AppMode, HouseStanding, ScoreboardEvent } from './houses'
@@ -36,6 +37,7 @@ type Props = {
   onPrint?: () => void
   onRefresh?: () => void
   onOpenCloudSync?: () => void
+  onOpenSecretReset?: () => void
   loading?: boolean
 }
 
@@ -52,9 +54,30 @@ export default function LeftDrawerMenu({
   onPrint,
   onRefresh,
   onOpenCloudSync,
+  onOpenSecretReset,
   loading,
 }: Props) {
   const isCloudConnected = isSupabaseConfigured()
+  const clickCountRef = useRef(0)
+  const clickTimerRef = useRef<any>(null)
+
+  const handleFooterSecretClick = () => {
+    clickCountRef.current += 1
+    if (clickTimerRef.current) clearTimeout(clickTimerRef.current)
+
+    if (clickCountRef.current >= 3) {
+      clickCountRef.current = 0
+      if (onOpenSecretReset) {
+        onOpenSecretReset()
+        onClose()
+      }
+      return
+    }
+
+    clickTimerRef.current = setTimeout(() => {
+      clickCountRef.current = 0
+    }, 2000)
+  }
   // Close on Escape key press
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -469,7 +492,26 @@ export default function LeftDrawerMenu({
             </Button>
           )}
 
-          <div className="text-center pt-1 text-[10px] text-muted-foreground font-medium">
+          {currentMode === 'admin' && onOpenSecretReset && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                onOpenSecretReset()
+                onClose()
+              }}
+              className="w-full h-8 text-xs gap-1.5 text-red-600 border-red-200 dark:border-red-900/60 hover:bg-red-50 dark:hover:bg-red-950/40 font-semibold"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Reset Pre-Filled Scores</span>
+            </Button>
+          )}
+
+          <div
+            onClick={handleFooterSecretClick}
+            className="text-center pt-1 text-[10px] text-muted-foreground font-medium cursor-pointer select-none hover:text-foreground transition-colors"
+            title="Click 3x to open Secret Reset"
+          >
             Prepared by Innocent Tudu SJ
           </div>
         </div>

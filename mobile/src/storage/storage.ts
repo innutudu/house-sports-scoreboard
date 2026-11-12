@@ -327,3 +327,35 @@ export function computeStandings(events: ScoreboardEvent[]): HouseStanding[] {
     third_places: thirdMap.get(h.id) ?? 0,
   })).sort((a, b) => b.total_points - a.total_points || a.name.localeCompare(b.name))
 }
+
+export async function resetAllScoresAsync(): Promise<ScoreboardEvent[]> {
+  const supabase = getSupabase()
+  if (supabase) {
+    try {
+      await Promise.allSettled([
+        supabase.from('results').delete().neq('house_id', -999),
+        supabase.from('event_podium').delete().neq('event_id', -999),
+        supabase.from('judge_entries').delete().neq('house_id', -999),
+        supabase.from('events').update({ status: 'upcoming' }).neq('id', -999),
+      ])
+    } catch (e) {
+      console.warn('Supabase reset failed:', e)
+    }
+  }
+
+  const currentEvents = await loadEvents()
+  const cleanEvents: ScoreboardEvent[] = currentEvents.map((ev) => ({
+    ...ev,
+    status: 'upcoming' as const,
+    results: [
+      { house_id: 1, points: 0 },
+      { house_id: 2, points: 0 },
+      { house_id: 3, points: 0 },
+      { house_id: 4, points: 0 },
+    ],
+    judge_entries: [],
+  }))
+
+  await saveEvents(cleanEvents)
+  return cleanEvents
+}

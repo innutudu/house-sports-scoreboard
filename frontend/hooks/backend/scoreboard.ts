@@ -28,3 +28,8 @@ export function useGetScoreboard(options?: { cachePolicy?: 'stale-while-revalida
 export function useSubmitResults(options?: { cachePolicy?: 'stale-while-revalidate' }) {
   return useBackendFunction('/backend/scoreboard/submitResults.ts', options)
 }
+
+/** Calls `/backend/scoreboard/resetScores.ts`. Clears all scores, placings, and judge entries back to 0. */
+export function useResetScores(options?: { cachePolicy?: 'stale-while-revalidate' }) {
+  return useBackendFunction('/backend/scoreboard/resetScores.ts', options)
+}

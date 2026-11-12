@@ -32,6 +32,7 @@ import {
   useGetEvents,
   useGetScoreboard,
   useSubmitResults,
+  useResetScores,
 } from '../hooks/backend/scoreboard'
 import type { EventStatus, HouseStanding, ScoreboardEvent, PodiumWinner, JudgeEntry, AppMode } from './ui/houses'
 import Standings from './ui/Standings'
@@ -44,6 +45,7 @@ import JudgeScoreCard from './ui/JudgeScoreCard'
 import ModeSwitcherDialog from './ui/ModeSwitcherDialog'
 import LeftDrawerMenu from './ui/LeftDrawerMenu'
 import CloudSyncDialog from './ui/CloudSyncDialog'
+import SecretResetDialog from './ui/SecretResetDialog'
 import {
   getSupabase,
   isSupabaseConfigured,
@@ -78,12 +80,27 @@ export default function ScoreboardPage() {
   })
   const [modeDialogOpen, setModeDialogOpen] = useState(false)
   const [cloudSyncOpen, setCloudSyncOpen] = useState(false)
+  const [resetDialogOpen, setResetDialogOpen] = useState(false)
   const [cloudState, setCloudState] = useState<{ status: CloudStatus; error: string }>(getCloudStatus())
+
+  const resetScores = useResetScores()
 
   useEffect(() => {
     return subscribeCloudStatus((status, error) => {
       setCloudState({ status, error: error || '' })
     })
+  }, [])
+
+  // Secret shortcut: Ctrl+Shift+R or Ctrl+Alt+R
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && (e.shiftKey || e.altKey) && e.key.toLowerCase() === 'r') {
+        e.preventDefault()
+        setResetDialogOpen(true)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
 
   const handleSelectMode = (newMode: AppMode) => {
@@ -202,6 +219,16 @@ export default function ScoreboardPage() {
     setMutating(true)
     try {
       await submitResults.trigger(args).result
+      refresh()
+    } finally {
+      setMutating(false)
+    }
+  }
+
+  const handleResetScores = async () => {
+    setMutating(true)
+    try {
+      await resetScores.trigger().result
       refresh()
     } finally {
       setMutating(false)
@@ -467,6 +494,7 @@ export default function ScoreboardPage() {
         onPrint={handlePrint}
         onRefresh={refresh}
         onOpenCloudSync={appMode === 'admin' ? () => setCloudSyncOpen(true) : undefined}
+        onOpenSecretReset={() => setResetDialogOpen(true)}
         loading={standingsLoading || eventsLoading}
       />
 
@@ -474,6 +502,13 @@ export default function ScoreboardPage() {
         open={cloudSyncOpen}
         onOpenChange={setCloudSyncOpen}
         onConnected={refresh}
+      />
+
+      <SecretResetDialog
+        open={resetDialogOpen}
+        onOpenChange={setResetDialogOpen}
+        onReset={handleResetScores}
+        resetting={mutating || resetScores.loading}
       />
     </div>
   )

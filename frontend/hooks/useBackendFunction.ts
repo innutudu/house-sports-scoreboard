@@ -488,6 +488,35 @@ async function executeSupabaseFunction(path: string, params: any): Promise<any> 
     return { ok: true, eventId }
   }
 
+  // 6. Reset All Scores & Pre-filled Data
+  if (path.includes('resetScores')) {
+    try {
+      await Promise.allSettled([
+        supabase.from('results').delete().neq('house_id', -999),
+        supabase.from('event_podium').delete().neq('event_id', -999),
+        supabase.from('judge_entries').delete().neq('house_id', -999),
+        supabase.from('events').update({ status: 'upcoming' }).neq('id', -999),
+      ])
+    } catch (err) {
+      console.error('Supabase reset error:', err)
+    }
+
+    try {
+      const store = getStore()
+      store.results = []
+      store.events = (store.events || []).map((e) => ({
+        ...e,
+        status: 'upcoming',
+        podium: [],
+        judge_entries: [],
+        results: [],
+      }))
+      saveStore(store)
+    } catch {}
+
+    return { ok: true, message: 'All pre-filled scores and entries have been reset to 0.' }
+  }
+
   throw new Error(`Unknown Supabase function: ${path}`)
 }
 
@@ -637,6 +666,19 @@ function executeLocalFunction(path: string, params: any): any {
     store.results = store.results.filter((r) => r.event_id !== eventId)
     saveStore(store)
     return { ok: true, eventId }
+  }
+
+  if (path.includes('resetScores')) {
+    store.results = []
+    store.events = store.events.map((e) => ({
+      ...e,
+      status: 'upcoming',
+      podium: [],
+      judge_entries: [],
+      results: [],
+    }))
+    saveStore(store)
+    return { ok: true, message: 'All local scores and entries reset to 0.' }
   }
 
   throw new Error(`Unknown backend function: ${path}`)
