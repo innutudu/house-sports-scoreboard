@@ -79,6 +79,9 @@ export default function LeftDrawer({
   ]
 
   const sortedStandings = [...standings].sort((a, b) => b.total_points - a.total_points)
+  const leader = sortedStandings[0]
+  const second = sortedStandings[1]
+  const leadMargin = leader && second ? leader.total_points - second.total_points : 0
 
   const handleSelect = (tab: NavTab) => {
     onSelectTab(tab)
@@ -98,8 +101,8 @@ export default function LeftDrawer({
                 <Ionicons name="trophy" size={22} color="#ffffff" />
               </View>
               <View>
-                <Text style={styles.drawerSubtitle}>ST. XAVIER'S INTER-HOUSE</Text>
-                <Text style={styles.drawerTitle}>Championship Menu</Text>
+                <Text style={styles.drawerSubtitle}>ST. XAVIER'S INTER COLLEGE</Text>
+                <Text style={styles.drawerTitle}>Maharo · Sports Desk</Text>
               </View>
             </View>
 
@@ -110,20 +113,60 @@ export default function LeftDrawer({
 
           {/* House Palette Strip */}
           <View style={styles.housesStrip}>
-            <Text style={styles.stripLabel}>HOUSES IN COMPETITION</Text>
+            <Text style={styles.stripLabel}>4 COMPETING HOUSES</Text>
             <View style={styles.housesGrid}>
-              {HOUSES.map((h) => (
-                <View key={h.id} style={styles.houseChip}>
-                  <View style={[styles.colorDot, { backgroundColor: h.hex }]} />
-                  <Text style={styles.houseChipName} numberOfLines={1}>
-                    {h.name}
-                  </Text>
-                </View>
-              ))}
+              {HOUSES.map((h) => {
+                const st = standings.find((s) => s.id === h.id)
+                const pts = st?.total_points ?? 0
+                return (
+                  <View key={h.id} style={styles.houseChip}>
+                    <View style={[styles.colorDot, { backgroundColor: h.hex }]} />
+                    <Text style={styles.houseChipName} numberOfLines={1}>
+                      {h.name}
+                    </Text>
+                    <Text style={styles.houseChipPoints}>{pts}p</Text>
+                  </View>
+                )
+              })}
             </View>
           </View>
 
           <ScrollView style={styles.scrollArea} contentContainerStyle={styles.scrollContent}>
+            {/* Dynamic Leader Spotlight Card */}
+            {leader && (
+              <View
+                style={[
+                  styles.leaderSpotlightCard,
+                  { borderColor: `${leader.hex}70`, backgroundColor: `${leader.hex}18` },
+                ]}
+              >
+                <View style={styles.leaderTopRow}>
+                  <View style={styles.leaderCrownTag}>
+                    <Ionicons name="sparkles" size={12} color="#eab308" />
+                    <Text style={styles.leaderTagText}>CURRENT LEADER</Text>
+                  </View>
+                  {leadMargin > 0 && (
+                    <Text style={styles.leadMarginText}>+{leadMargin} pts lead</Text>
+                  )}
+                </View>
+                <View style={styles.leaderMainRow}>
+                  <View style={[styles.leaderAvatar, { backgroundColor: leader.hex }]}>
+                    <Ionicons name="trophy" size={16} color="#ffffff" />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.leaderName}>{leader.name} House</Text>
+                    <Text style={styles.leaderStats}>
+                      {leader.first_places || 0} 🥇 Firsts · {leader.events_scored} scored
+                    </Text>
+                  </View>
+                  <View style={{ alignItems: 'flex-end' }}>
+                    <Text style={styles.leaderPointsNum}>{leader.total_points}</Text>
+                    <Text style={styles.leaderPointsLabel}>PTS</Text>
+                  </View>
+                </View>
+              </View>
+            )}
+
             {/* Menu Items */}
             <Text style={styles.sectionHeader}>MAIN NAVIGATION</Text>
             <View style={styles.menuList}>
@@ -425,6 +468,77 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '700',
     color: '#1e293b',
+  },
+  houseChipPoints: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#64748b',
+    marginLeft: 1,
+  },
+  leaderSpotlightCard: {
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 10,
+    marginBottom: 14,
+  },
+  leaderTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
+  leaderCrownTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  leaderTagText: {
+    fontSize: 9,
+    fontWeight: '900',
+    color: '#b45309',
+    letterSpacing: 0.5,
+  },
+  leadMarginText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#b45309',
+    backgroundColor: '#fef3c7',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  leaderMainRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  leaderAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  leaderName: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#0f172a',
+  },
+  leaderStats: {
+    fontSize: 9,
+    color: '#64748b',
+    marginTop: 1,
+  },
+  leaderPointsNum: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: '#0f172a',
+  },
+  leaderPointsLabel: {
+    fontSize: 8,
+    fontWeight: '800',
+    color: '#94a3b8',
+    letterSpacing: 0.5,
   },
   scrollArea: {
     flex: 1,

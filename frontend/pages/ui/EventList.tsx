@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { CalendarDays, Pencil, Trash2, Users, CircleDot, Trophy, Medal, Award, Search, Filter } from 'lucide-react'
 import { Button } from '../../lib/shadcn/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../lib/shadcn/card'
@@ -23,6 +23,7 @@ type Props = {
   onEdit: (event: ScoreboardEvent) => void
   onDelete: (event: ScoreboardEvent) => void
   onOpenJudgeCard?: (event: ScoreboardEvent) => void
+  selectedCategory?: string
 }
 
 const CATEGORY_FILTERS = [
@@ -48,10 +49,17 @@ export default function EventList({
   onEdit,
   onDelete,
   onOpenJudgeCard,
+  selectedCategory,
 }: Props) {
-  const [activeFilter, setActiveFilter] = useState('All')
+  const [activeFilter, setActiveFilter] = useState(selectedCategory || 'All')
   const [statusFilter, setStatusFilter] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
+
+  useEffect(() => {
+    if (selectedCategory) {
+      setActiveFilter(selectedCategory)
+    }
+  }, [selectedCategory])
 
   if (loading && events.length === 0) {
     return (

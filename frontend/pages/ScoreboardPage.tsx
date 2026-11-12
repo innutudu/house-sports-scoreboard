@@ -69,6 +69,7 @@ export default function ScoreboardPage() {
   const [deleteTarget, setDeleteTarget] = useState<ScoreboardEvent | null>(null)
   const [mutating, setMutating] = useState(false)
   const [activeTab, setActiveTab] = useState<string>('standings')
+  const [selectedCategory, setSelectedCategory] = useState<string>('All')
   const [judgeEventId, setJudgeEventId] = useState<number | undefined>(undefined)
   const [drawerOpen, setDrawerOpen] = useState(false)
 
@@ -417,6 +418,7 @@ export default function ScoreboardPage() {
               houses={houses}
               loading={eventsLoading}
               currentMode={appMode}
+              selectedCategory={selectedCategory}
               onEdit={setEditEvent}
               onDelete={setDeleteTarget}
               onOpenJudgeCard={handleOpenJudgeCard}
@@ -493,9 +495,14 @@ export default function ScoreboardPage() {
 
       <LeftDrawerMenu
         open={drawerOpen}
+        onOpen={() => setDrawerOpen(true)}
         onClose={() => setDrawerOpen(false)}
         activeTab={activeTab}
         onSelectTab={setActiveTab}
+        onSelectCategory={(cat) => {
+          setSelectedCategory(cat)
+          setActiveTab('events')
+        }}
         currentMode={appMode}
         onOpenModeDialog={() => setModeDialogOpen(true)}
         standings={standings}
