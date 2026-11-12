@@ -41,7 +41,7 @@ export default function SecretResetDialog({
   const handleConfirm = async () => {
     const trimmed = pin.trim()
     if (trimmed !== ADMIN_PIN && trimmed.toUpperCase() !== 'RESET') {
-      setError('Incorrect Admin PIN or confirmation text. Enter 9999 to confirm.')
+      setError('Incorrect Admin PIN. Please enter the administrator PIN to confirm.')
       return
     }
 
@@ -107,13 +107,13 @@ export default function SecretResetDialog({
 
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-foreground flex items-center justify-between">
-                <span>Enter Admin PIN (9999) or "RESET" to confirm:</span>
+                <span>Enter Admin PIN to confirm:</span>
                 <span className="text-[10px] text-muted-foreground font-mono">Protected</span>
               </label>
               <div className="relative">
                 <Input
                   type="password"
-                  placeholder="Enter 9999 or RESET"
+                  placeholder="Enter Admin PIN"
                   value={pin}
                   onChange={(e) => {
                     setPin(e.target.value)
