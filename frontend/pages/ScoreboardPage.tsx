@@ -260,26 +260,32 @@ export default function ScoreboardPage() {
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             </Button>
 
-            <div className="rounded-lg bg-primary text-primary-foreground p-2 shadow-sm">
-              <Trophy className="w-6 h-6" aria-hidden="true" />
+            <div className="rounded-xl bg-primary text-primary-foreground p-2.5 shadow-sm shrink-0">
+              <Trophy className="w-6 h-6 sm:w-7 sm:h-7" aria-hidden="true" />
             </div>
             <div>
-              <h1 className="text-xl font-bold leading-tight">Inter-House Sports Meet Scoreboard</h1>
-              <p className="text-xs text-muted-foreground flex flex-wrap items-center gap-1.5 mt-0.5">
-                <span className="inline-flex items-center gap-1">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#2F8CDC]" /> Britto
-                </span>
-                <span>·</span>
-                <span className="inline-flex items-center gap-1">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#F5A9CA]" /> Campion
-                </span>
-                <span>·</span>
-                <span className="inline-flex items-center gap-1">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#82CC1F]" /> Kostka
-                </span>
-                <span>·</span>
-                <span className="inline-flex items-center gap-1">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#9B1C3B]" /> Loyola
+              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground leading-tight">
+                St. Xavier's Inter College, Maharo
+              </h1>
+              <p className="text-xs sm:text-sm font-semibold text-primary flex flex-wrap items-center gap-1.5 mt-0.5">
+                <span>Inter-House Sports Meet Scoreboard</span>
+                <span className="hidden sm:inline text-muted-foreground font-normal">·</span>
+                <span className="inline-flex items-center gap-1.5 text-xs font-normal text-muted-foreground">
+                  <span className="inline-flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-[#2F8CDC]" /> Britto
+                  </span>
+                  <span>·</span>
+                  <span className="inline-flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-[#F5A9CA]" /> Campion
+                  </span>
+                  <span>·</span>
+                  <span className="inline-flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-[#82CC1F]" /> Kostka
+                  </span>
+                  <span>·</span>
+                  <span className="inline-flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-[#9B1C3B]" /> Loyola
+                  </span>
                 </span>
               </p>
             </div>

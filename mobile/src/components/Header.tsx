@@ -60,9 +60,11 @@ export default function Header({ currentMode, onOpenMenu, onOpenModeModal, onRef
 
         {/* Center: Title */}
         <View style={styles.titleContainer}>
-          <Text style={styles.superTitle}>INTER-HOUSE CHAMPIONSHIP</Text>
-          <Text style={styles.mainTitle} numberOfLines={1}>
-            Sports Scoreboard
+          <Text style={styles.mainCollegeTitle} numberOfLines={1}>
+            St. Xavier's Inter College
+          </Text>
+          <Text style={styles.subCollegeTitle} numberOfLines={1}>
+            Maharo · Sports Scoreboard
           </Text>
         </View>
 
@@ -139,17 +141,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  superTitle: {
-    fontSize: 9,
-    fontWeight: '800',
-    color: '#64748b',
-    letterSpacing: 0.8,
-  },
-  mainTitle: {
+  mainCollegeTitle: {
     fontSize: 15,
-    fontWeight: '800',
+    fontWeight: '900',
     color: '#0f172a',
     letterSpacing: -0.3,
+  },
+  subCollegeTitle: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#2563eb',
+    letterSpacing: 0.3,
+    marginTop: 1,
   },
   modeBadge: {
     flexDirection: 'row',
